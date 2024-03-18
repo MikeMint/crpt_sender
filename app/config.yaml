@@ -1,0 +1,3 @@
+telegram:
+  token: '' #WhateverTestBot
+  group_id: '' #Channel_Test
