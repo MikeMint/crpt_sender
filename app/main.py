@@ -11,7 +11,7 @@ from functools import wraps
 from threading import Thread
 
 log = logger("main")
-with open('config.yaml', 'r') as stream:
+with open('config_test.yaml', 'r') as stream:
     try:
         config = yaml.safe_load(stream)
         TOKEN = config['telegram']['token']
@@ -35,7 +35,7 @@ def check_command_or_menu(bot):
             match message.text:
                 case "/start":
                     return start(message)
-                case "\U0001F4D1 Отправить новое сообщение":
+                case "\U0001F4D1 Отправить новое сообщение(текст)":
                     return start(message)
                 case _:
                     return func(message)
@@ -45,9 +45,8 @@ def check_command_or_menu(bot):
 
 def get_main_keyboard():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3, one_time_keyboard=False)
-    button_send = types.KeyboardButton("\U0001F4D1 Отправить новое сообщение")
-    # button_show = types.KeyboardButton("\U0001F4F0 Показать последние")
-    markup.add(button_send)
+    button_send_text = types.KeyboardButton("\U0001F4D1 Отправить новое сообщение(текст)")
+    markup.add(button_send_text)
     return markup
 
 def hide_keyboard():
@@ -67,6 +66,16 @@ def check_and_convert_string(input_str, dict_to_check):
     else:
         return False, None
 
+def parse_date(date_string):
+    date_formats = ['%d.%m.%Y', '%d.%m.%y', '%d/%m/%Y', '%d/%m/%y']
+    for date_format in date_formats:
+        try:
+            datetime.datetime.strptime(date_string, date_format)
+            return datetime.datetime.strptime(date_string, date_format).strftime('%d.%m.%Y')
+        except ValueError:
+            continue
+    raise ValueError("Invalid date format")
+
 def validate_message(message):
     buf = message.split(" ")
     # Checking if the first part contains digits and letters less than 15 symbols
@@ -74,10 +83,9 @@ def validate_message(message):
         return False, "Неправильно введено название монеты, попробуй еще раз"
     # Checking if the second part is datetime object like %d.%m.%Y
     try:
-        datetime.datetime.strptime(buf[1], '%d.%m.%Y')
-    except Exception as e:
-        log.error(f"Error while parsing date, {e}")
-        return False, "Неправильно введена дата, попробуй еще раз"
+        buf[1] = parse_date(buf[1])
+    except ValueError as e:
+        return False, f"Неправильно введена дата, попробуй еще раз: {e}"
     # Checking if the 3,4,5 parts is in dicts
     length_values = ["1Ч", "4Ч", "1Д"]
     found, buf[2] = check_and_convert_string(input_str=buf[2], dict_to_check=length_values)
@@ -106,7 +114,7 @@ def not_in_messages(message, send_messages):
 
 
 @bot.message_handler(commands=['start'])
-@bot.message_handler(func=lambda message: message.text == "\U0001F4D1 Отправить новое сообщение")
+@bot.message_handler(func=lambda message: message.text == "\U0001F4D1 Отправить новое сообщение(текст)")
 def start(message):
     if message.text == "/start":
         bot.send_message(message.from_user.id, """Привет. Это бот для отправки сообщений в канал""", reply_markup=hide_keyboard())
@@ -170,14 +178,10 @@ def fetch_last_message_except_one():
             latest_update = data["result"][-1]
             bot.process_new_updates([telebot.types.Update.de_json(latest_update)])
 
-def clear_users():
-    global users
-    log.info("Cleaning users")
-    users = {}
-    log.info(users)
+
 
 def main():
-    schedule.every().day.at("00:00").do(clear_users)
+    # schedule.every().day.at("00:00").do(clear_users)
     log.info("Starting bot")
     while True:
         schedule.run_pending()
