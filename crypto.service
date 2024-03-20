@@ -1,0 +1,14 @@
+[Unit]
+Description=crypt bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Change to directory with app
+WorkingDirectory=/some_directory
+ExecStart=/usr/bin/python3.10 main.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
