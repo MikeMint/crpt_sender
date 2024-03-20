@@ -68,6 +68,14 @@ def check_message(message):
     okey, buf_user["message"] = utils.validate_message(message.text)
     if not okey:
         bot.send_message(message.from_user.id, f"""{buf_user["message"]}""", reply_markup=hide_keyboard())
+        bot.send_message(message.from_user.id, """<b>Подсказка:</b>
+Формат сообщения: <b>1INCH 13.03.2024 4Ч Bybit spot</b>
+<b>1INCH</b> - название монеты, максимально 15 символов
+<b>13.03.2024</b> - дата в формате дд.мм.(гг)гг, дд/мм/(гг)гг
+<b>4Ч</b> - Тайминг. Выбор из 1Ч, 4Ч, 1Д
+<b>Bybit</b> - биржа. Выбор из Bybit, Binance
+<b>spot</b> - тип. Выбор из spot, futures""",
+                         parse_mode='HTML', reply_markup=hide_keyboard())
         bot.register_next_step_handler(message, check_message)
     else:
         check, send_messages = utils.not_in_messages(buf_user["message"], send_messages)
@@ -91,6 +99,14 @@ def check_all_messages(message):
     okey, buf_user["message"] = utils.validate_message(message.text)
     if not okey:
         bot.send_message(message.from_user.id, f"""{buf_user["message"]}""", reply_markup=hide_keyboard())
+        bot.send_message(message.from_user.id, """<b>Подсказка:<b>
+Формат сообщения: 1INCH 13.03.2024 4Ч Bybit spot
+1INCH - название монеты, максимально 15 символов
+13.03.2024 - дата в формате дд.мм.гг, дд.мм.гггг, дд/мм/гг, дд/мм/гггг
+4Ч - Тайминг. Выбор из 1Ч, 4Ч, 1Д
+Bybit - биржа. Выбор из Bybit, Binance
+spot - тип. Выбор из spot, futures""",
+                         parse_mode='HTML', reply_markup=hide_keyboard())
         bot.register_next_step_handler(message, check_message)
     else:
         check, send_messages = utils.not_in_messages(buf_user["message"], send_messages)

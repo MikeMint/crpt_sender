@@ -1,9 +1,11 @@
 import re
 import datetime
+from journal import logger
 
 class Utils():
     def __init__(self):
         self.description = "Utils functions"
+        self.log = logger("utils")
 
     def check_and_convert_string(self, input_str, dict_to_check):
         # Convert input string to lowercase
@@ -29,6 +31,8 @@ class Utils():
 
     def validate_message(self,message):
         buf = message.split(" ")
+        if len(buf) !=5:
+            return False, "Неправильный формат сообщения, попробуй еще раз"
         # Checking if the first part contains digits and letters less than 15 symbols
         if not re.match("^[a-zA-Z0-9]{1,15}$", buf[0]):
             return False, "Неправильно введено название монеты, попробуй еще раз"
@@ -36,7 +40,8 @@ class Utils():
         try:
             buf[1] = self.parse_date(buf[1])
         except ValueError as e:
-            return False, f"Неправильно введена дата, попробуй еще раз: {e}"
+            self.log.error(e)
+            return False, f"Неправильно введена дата, попробуй еще раз"
         # Checking if the 3,4,5 parts is in dicts
         length_values = ["1Ч", "4Ч", "1Д"]
         found, buf[2] = self.check_and_convert_string(input_str=buf[2], dict_to_check=length_values)
