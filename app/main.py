@@ -1,4 +1,3 @@
-import re
 import yaml
 import telebot
 import requests
